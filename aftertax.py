@@ -17,7 +17,6 @@ MINIMUM_TAXABLE_INCOME = 5600
 OVER_THREE_YEARS_TAX = 500  # Telos epithdeumatos because fuck you that's why
 
 TAX_SCALE = OrderedDict(sorted({
-    MINIMUM_TAXABLE_INCOME:   0,
     8636:                     0.2,
     20000:                    0.22,
     30000:                    0.29,
@@ -27,7 +26,6 @@ TAX_SCALE = OrderedDict(sorted({
 
 
 SOLIDARITY_TAX_SCALE = OrderedDict(sorted({
-    12000:       0,
     20000:       0.022,
     30000:       0.05,
     40000:       0.065,
@@ -40,16 +38,20 @@ SOLIDARITY_TAX_SCALE = OrderedDict(sorted({
 
 def traverse_tax_scale(income, scale):
     you_got_to_pay = 0
-    last_level = MINIMUM_TAXABLE_INCOME
+    last_level = 0
     for level, tax in scale.items():
         print("Level: {0} | Tax: {1}".format(level, tax))
         if income > level:
-            you_got_to_pay += level * tax
+            you_got_to_pay += (level - last_level) * tax
         else:
             you_got_to_pay += (income - last_level) * tax
             break
         last_level = level
     return you_got_to_pay
+
+
+def minimum_income_tax_reduction(minimum_taxable_income, lowest_level_percentage):
+    return minimum_taxable_income * lowest_level_percentage
 
 
 def pension_tax(yearly_income, pension_percent):
@@ -72,13 +74,17 @@ def taxable_income(yearly_income):
 
 def after_tax(yearly_income, over_three_years=False):
     yearly_taxable_income = taxable_income(yearly_income)
-    print("Taxable income : {0}".format(yearly_taxable_income))
+    print("Taxable income: {0}".format(yearly_taxable_income))
     taxes = traverse_tax_scale(yearly_taxable_income, TAX_SCALE)
     print("Taxes: {0}".format(taxes))
     solidarity_taxes = traverse_tax_scale(
         yearly_taxable_income, SOLIDARITY_TAX_SCALE)
-    print("Solidarity Taxes {0}".format(solidarity_taxes))
+    print("Solidarity Taxes: {0}".format(solidarity_taxes))
     yearly_after = yearly_taxable_income - taxes - solidarity_taxes
+    minimum_income_reduction = minimum_income_tax_reduction(
+        MINIMUM_TAXABLE_INCOME, next(iter(TAX_SCALE.items()))[1])
+    print("Minimum income tax reduction: {0}".format(minimum_income_reduction))
+    yearly_after += minimum_income_reduction
     if over_three_years:
         yearly_after -= OVER_THREE_YEARS_TAX
     return yearly_after
