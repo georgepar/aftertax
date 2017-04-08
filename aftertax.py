@@ -14,6 +14,8 @@ EMPLOYER_PERCENT = 0.1333
 
 MINIMUM_TAXABLE_INCOME = 5600
 
+OVER_THREE_YEARS_TAX = 500  # Telos epithdeumatos because fuck you that's why
+
 TAX_SCALE = OrderedDict(sorted({
     MINIMUM_TAXABLE_INCOME:   0,
     8636:                     0.2,
@@ -68,7 +70,7 @@ def taxable_income(yearly_income):
     return yearly_income
 
 
-def after_tax(yearly_income):
+def after_tax(yearly_income, over_three_years=False):
     yearly_taxable_income = taxable_income(yearly_income)
     print("Taxable income : {0}".format(yearly_taxable_income))
     taxes = traverse_tax_scale(yearly_taxable_income, TAX_SCALE)
@@ -76,7 +78,10 @@ def after_tax(yearly_income):
     solidarity_taxes = traverse_tax_scale(
         yearly_taxable_income, SOLIDARITY_TAX_SCALE)
     print("Solidarity Taxes {0}".format(solidarity_taxes))
-    return yearly_taxable_income - taxes - solidarity_taxes
+    yearly_after = yearly_taxable_income - taxes - solidarity_taxes
+    if over_three_years:
+        yearly_after -= OVER_THREE_YEARS_TAX
+    return yearly_after
 
 
 def main():
@@ -90,8 +95,11 @@ def main():
             -e 1200 12 -> 12 salaries of 1200
             -e 1300 14 -> 14 salaries of 1300
         """)
+    parser.add_argument('-o', '--over-three-years', action='store_true')
+    parser.set_defaults(over_three_years=False)
 
-    employers = parser.parse_args().employer
+    args = parser.parse_args()
+    employers = args.employer
 
     if len(employers) > 2:
         print("Error: More than to employers follows different tax scheme")
@@ -107,7 +115,8 @@ def main():
         employer_i += 1
 
     print("Yearly before tax: {0}".format(yearly_before_tax))
-    yearly_after_tax = after_tax(yearly_before_tax)
+    yearly_after_tax = after_tax(
+        yearly_before_tax, over_three_years=args.over_three_years)
     print("Yearly income after tax: {0}".format(yearly_after_tax))
     print("Monthly income after tax: {0}".format(yearly_after_tax / 12))
 
