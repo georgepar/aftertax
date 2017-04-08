@@ -87,23 +87,28 @@ def after_tax(yearly_income, over_three_years=False):
 def main():
     parser = argparse.ArgumentParser(
         prog='aftertax',
-        usage='%(prog) -e monthly number_of_salaries -e ...')
+        usage='aftertax -e monthly number_of_salaries -e ...')
+    employer_help="""Example:
+            -e 1200 12 -> 12 salaries of 1200
+        """
     parser.add_argument(
         '-e', '--employer', nargs='+', action='append',
-        help="""
-        Pass employer info as tuple. Examples:
-            -e 1200 12 -> 12 salaries of 1200
-            -e 1300 14 -> 14 salaries of 1300
-        """)
+        help=employer_help)
     parser.add_argument('-o', '--over-three-years', action='store_true')
     parser.set_defaults(over_three_years=False)
+
+    if len(sys.argv) < 2:
+        parser.print_usage()
+        sys.exit(1)
 
     args = parser.parse_args()
     employers = args.employer
 
-    if len(employers) > 2:
-        print("Error: More than to employers follows different tax scheme")
-        sys.exit(1)
+    for e in employers:
+        if len(e) != 2:
+            print("Pass 2 values for each employer: Monthly salary and number of salaries")
+            print(employer_help)
+            sys.exit(1)
 
     yearly_before_tax = 0
     employer_i = 0
