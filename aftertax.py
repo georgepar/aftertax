@@ -17,11 +17,11 @@ MINIMUM_TAXABLE_INCOME = 5600
 OVER_THREE_YEARS_TAX = 500  # Telos epithdeumatos because fuck you that's why
 
 TAX_SCALE = OrderedDict(sorted({
-    8636:                     0.2,
-    20000:                    0.22,
-    30000:                    0.29,
-    40000:                    0.37,
-    10000000000:              0.45
+    8636:        0.2,
+    20000:       0.22,
+    30000:       0.29,
+    40000:       0.37,
+    10000000000: 0.45
 }.items()))
 
 
